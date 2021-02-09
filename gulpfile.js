@@ -47,7 +47,7 @@ gulp.task('serve', gulp.series(['sass'], gulp.series(['doc']), function () {
     server: "./"
   });
 
-  gulp.watch("./style/*.scss", gulp.series(['sass']));
+  gulp.watch("./css/*.scss", gulp.series(['sass']));
   gulp.watch('./js/*.js', gulp.series(['doc']));
   //Quité la tarea lint de la llamada inicial porque detenía las tareas watch
   gulp.watch('./js/*.js', gulp.parallel(['lint']));

@@ -33,3 +33,39 @@ function crearNodo(tagName, nodeText, nodeId, nodeClasses, nodeAttributes) {
 
   return nodeElement;
 }
+
+/**
+ * Crea y añade nodos al documento HTML en base a los datos del objeto recibido, ya sea utilizando HTML templates o la función crearNodo(), 
+ * cuando el navegador no sea compatible con las templates.
+ *
+ * @param {Object} objeto - Objeto con los datos que queremos renderizar en el DOM.
+ * @param {*} containerID - ID del contenedor donde ubicaremos los nodos generados con templates.
+ * @param {*} templateTag - Etiqueta HTML de la template que queremos utilizar.
+ * @param {*} tagID - ID del elemento del contenedor en el que insertamos el nodo.
+ */
+function generarTemplate(objeto, containerID, templateTag, tagID) {
+  //Clonado de nodos:
+  // Comprobar si el navegador soporta el elemento HTML template element chequeando
+  // si tiene el atributo 'content'
+  if ('content' in document.createElement('template')) {
+    // Instanciar el elemento HTML
+    // y su contenido con el template
+    var container = document.querySelector(containerID),
+      opcion = container.content.querySelectorAll(templateTag);
+    opcion[0].setAttribute("Value", objeto)
+    opcion[0].textContent = objeto;
+
+    // Clonar el nuevo objeto e insertarlo en la lista
+    var listaObjetos = document.querySelector(tagID);
+    var clone = document.importNode(container.content, true);
+    listaObjetos.appendChild(clone);
+  }
+  else {
+    // Forma alternativa de añadir filas mediante DOM porque el
+    // elemento template no está soportado por el navegador.
+    //Creamos los nodos de perros
+    let objNode = crearNodo("option", null, null, [], [{ 'value': objeto }]);
+    objNode.appendChild(document.createTextNode(objeto));
+    document.getElementById('objeto').appendChild(objNode);
+  }
+}
