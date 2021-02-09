@@ -10,9 +10,9 @@ sass.compiler = require('node-sass');
 
 // Compile sass into CSS & auto-inject into browsers
 gulp.task('sass', function () {
-  return gulp.src("./style/*.scss")
+  return gulp.src("./css/*.scss")
     .pipe(sass())
-    .pipe(gulp.dest("./style"))
+    .pipe(gulp.dest("./css"))
     .pipe(browserSync.stream());
 });
 

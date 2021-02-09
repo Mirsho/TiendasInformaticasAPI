@@ -1,9 +1,11 @@
 {
   "name": "shopapi",
   "version": "1.0.0",
-  "description": "Aplicacion que solicita recursos a la Dog API",
+  "description": "[DEW-DSW] Aplicacion que solicita recursos a la API JAX-RS de Empresas Informáticas",
   "main": "main.js",
-  "dependencies": {"gulp-eslint": "^6.0.0"},
+  "dependencies": {
+    "gulp-eslint": "^6.0.0"
+  },
   "devDependencies": {
     "browser-sync": "^2.26.14",
     "gulp": "^4.0.2",
@@ -15,5 +17,22 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Adrián Perera",
-  "license": "ISC"
+  "license": "ISC",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mirsho/TiendasInformaticasAPI.git"
+  },
+  "keywords": [
+    "API",
+    "REST",
+    "JAX-RS",
+    "JS"
+  ],
+  "bugs": {
+    "url": "https://github.com/Mirsho/TiendasInformaticasAPI/issues"
+  },
+  "homepage": "https://github.com/Mirsho/TiendasInformaticasAPI#readme"
 }
