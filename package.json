@@ -1,0 +1,19 @@
+{
+  "name": "shopapi",
+  "version": "1.0.0",
+  "description": "Aplicacion que solicita recursos a la Dog API",
+  "main": "main.js",
+  "dependencies": {"gulp-eslint": "^6.0.0"},
+  "devDependencies": {
+    "browser-sync": "^2.26.14",
+    "gulp": "^4.0.2",
+    "gulp-jsdoc3": "^3.0.0",
+    "gulp-sass": "^4.1.0",
+    "node-sass": "^5.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adrián Perera",
+  "license": "ISC"
+}
