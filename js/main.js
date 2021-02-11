@@ -1,3 +1,7 @@
+const { result } = require("gulp-eslint");
+
+const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
+
 /**
  *Crea un nodo en el DOM con la etiqueta HTML y los atributos que queramos asignarle.
  *
@@ -69,3 +73,114 @@ function generarTemplate(objeto, containerID, templateTag, tagID) {
     document.getElementById('objeto').appendChild(objNode);
   }
 }
+
+/**
+ *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
+ *
+ * @param {String} url - Ruta de acceso a la Dog API
+ */
+function peticionXHR(url) {
+  let dogexion = new XMLHttpRequest();
+  dogexion.onreadystatechange = procesarEventos;
+  dogexion.open('GET', url, true);
+  dogexion.send();
+
+  /**
+   *Procesa los eventos de la conexión XML
+   *
+   */
+  function procesarEventos() {
+    if (dogexion.readyState == 4) {
+      if (dogexion.status == 200) {
+        let dogBreeds = JSON.parse(dogexion.responseText);
+        let breeds = Object.keys(dogBreeds.message);
+        console.log(breeds);
+        let firstDog = breeds[0]; //Asignar el atributo selected
+        breeds.forEach(dog => listarPerros(dog));
+        dogPhoto(firstDog);
+      }
+      else {
+        alert(dogexion.statusText);
+      }
+    } else if (dogexion.readyState == 1 || dogexion.readyState == 2 || dogexion.readyState == 3) {
+      console.log('Procesando...');
+    }
+  }
+}
+
+peticionXHR(baseURL);
+
+function peticionJQuery(path) {
+  $.ajax({
+    url: path, //URL de la petición
+    data: { id: 123 }, //información a enviar, puede ser una cadena
+    type: 'GET', //tipo de la petición: POST o GET
+    dataType: 'json', //tipo de dato que se espera
+    success: function (json) { //función a ejecutar si es satisfactoria 
+      $('<h1/>').text(json.title).appendTo('body'); $('<div class="content"/>').html(json.html).appendTo('body');
+    }, error: function (jqXHR, status, error) { //función error 
+      alert('Disculpe, existió un problema');
+    }, // función a ejecutar sin importar si la petición falló o no 
+    complete: function (jqXHR, status) { alert('Petición realizada'); }
+  });
+}
+
+const jsonJQuery = peticionJQuery(baseURL);
+console.log(jsonJQuery);
+
+const peticionFetch = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok)
+    throw new Error("WARN", response.status);
+  const data = await response.text();
+  return data;
+}
+
+const jsonFecth = peticionFetch(baseURL);
+console.log(jsonFecth);
+
+/* Implementación con promesas */
+//Ejemplo MANZ
+const doTask = (iterations) => new Promise((resolve, reject) => {
+  const numbers = [];
+  for (let i = 0; i < iterations; i++) {
+    const number = 1 + Math.floor(Math.random() * 6);
+    numbers.push(number);
+    if (number === 6) {
+      reject({
+        error: true,
+        message: "Se ha sacado un 6"
+      });
+    }
+  }
+  resolve({
+    error: false,
+    value: numbers
+  });
+});
+
+doTask(10)
+  .then(result => console.log("Tiradas correctas: ", result.value))
+  .catch(err => console.error("Se ha sacado un ", err.message));
+
+  const doTask = (iterations) => new Promise((resolve, reject) => {
+    const numbers = [];
+    for (let i = 0; i < iterations; i++) {
+      const number = 1 + Math.floor(Math.random() * 6);
+      numbers.push(number);
+      if (number === 6) {
+        reject({
+          error: true,
+          message: "Se ha sacado un 6"
+        });
+      }
+    }
+    resolve({
+      error: false,
+      value: numbers
+    });
+  });
+  
+  doTask(10)
+    .then(result => console.log("Tiradas correctas: ", result.value))
+    .catch(err => console.error("Se ha sacado un ", err.message));

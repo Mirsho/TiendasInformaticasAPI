@@ -23,21 +23,10 @@ gulp.task('doc', function (cb) {
 });
 
 gulp.task('lint', () => {
-  gulp.src(['./js/*.js', '!node_modules/**'])
-    .pipe(eslint({
-      rules: {
-        'my-custom-rule': 1,
-        'strict': 2
-      },
-      globals: [
-        'jQuery',
-        '$'
-      ],
-      envs: [
-        'browser'
-      ]
-    }))
-    .pipe(eslint.formatEach('compact', process.stderr));
+  gulp.src(['./js/*.js'])
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 // Static Server + watching scss/html files
