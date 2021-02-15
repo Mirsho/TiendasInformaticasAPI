@@ -1,5 +1,3 @@
-const { result } = require("gulp-eslint");
-
 const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
 
 /**
