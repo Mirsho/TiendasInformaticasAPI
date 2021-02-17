@@ -1,4 +1,90 @@
 const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
+const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/mitienda/';
+
+/**
+ *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
+ *
+ * @param {String} url - Ruta de acceso a la Dog API
+ */
+function peticionXML(url) {
+  let conection = new XMLHttpRequest();
+  conection.onreadystatechange = procesarEventos;
+  conection.open('GET', url, true);
+  conection.send();
+
+  /**
+   *Procesa los eventos de la conexión XML
+   *
+   */
+  function procesarEventos() {
+    if (conection.readyState == 4) {
+      if (conection.status == 200) {
+        let tiendas = JSON.parse(conection.responseText);
+        console.log(tiendas);
+      }
+      else {
+        //!Ocultar spinner si lo hubiera
+        alert(conection.statusText);
+      }
+    } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
+      console.log('Procesando...');
+    }
+  }
+}
+
+peticionXML(inmaURL);
+
+peticionJQuery(inmaURL);
+
+/**
+ * JQUERY - Conexión con API mediante Jquery
+ * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
+ */
+function peticionJQuery(path, resourceType) {
+  $.ajax({
+    url: path, //URL de la petición
+    data: {}, //información a enviar, puede ser una cadena
+    type: 'GET', //tipo de la petición: POST o GET
+    dataType: 'json', //tipo de dato que se espera
+    success: function (json) { //función a ejecutar si es satisfactoria 
+      console.log(json);
+    }, error: function (jqXHR, status, error) { //función error 
+      alert('Disculpe, existió un problema. Vuelva a intentarlo.');
+    }, finally: function () { },
+    // función a ejecutar sin importar si la petición falló o no 
+    complete: function (jqXHR, status) { console.log('Petición realizada'); }
+  });
+}
+
+/**
+ * FETCH - Función asíncrona para realizar peticiones fetch. 
+ * @param {*} url 
+ */
+const peticionFetch = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok)
+    throw new Error("WARN", response.status);
+  const data = await response.text();
+  //console.log(data);
+  return data;
+}
+
+peticionFetch(inmaURL)
+  .then(result => result)
+  .then(data => console.log(JSON.parse(data)))
+  .finally(() => console.log("Terminado."))
+  .catch(error => console.error(error));
+
+/**
+ *Elimina los nodos hijo del nodo inidcado, para eliminar la foto del perro.
+ *
+ * @param {*} myNode - Nodo cuyos hijos deseamos eliminar.
+ */
+function clearNodes(myNode) {
+  while (myNode.firstChild) {
+    myNode.removeChild(myNode.lastChild);
+  }
+}
 
 /**
  *Crea un nodo en el DOM con la etiqueta HTML y los atributos que queramos asignarle.
@@ -71,88 +157,3 @@ function generarTemplate(objeto, containerID, templateTag, tagID) {
     document.getElementById('objeto').appendChild(objNode);
   }
 }
-
-/**
- *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
- *
- * @param {String} url - Ruta de acceso a la Dog API
- */
-function peticionXHR(url) {
-  let dogexion = new XMLHttpRequest();
-  dogexion.onreadystatechange = procesarEventos;
-  dogexion.open('GET', url, true);
-  dogexion.send();
-
-  /**
-   *Procesa los eventos de la conexión XML
-   *
-   */
-  function procesarEventos() {
-    if (dogexion.readyState == 4) {
-      if (dogexion.status == 200) {
-        let dogBreeds = JSON.parse(dogexion.responseText);
-        let breeds = Object.keys(dogBreeds.message);
-        console.log(breeds);
-        let firstDog = breeds[0]; //Asignar el atributo selected
-        breeds.forEach(dog => listarPerros(dog));
-        dogPhoto(firstDog);
-      }
-      else {
-        alert(dogexion.statusText);
-      }
-    } else if (dogexion.readyState == 1 || dogexion.readyState == 2 || dogexion.readyState == 3) {
-      console.log('Procesando...');
-    }
-  }
-}
-
-peticionXHR(baseURL);
-
-function peticionJQuery(path) {
-  $.ajax({
-    url: path, //URL de la petición
-    data: { id: 123 }, //información a enviar, puede ser una cadena
-    type: 'GET', //tipo de la petición: POST o GET
-    dataType: 'json', //tipo de dato que se espera
-    success: function (json) { //función a ejecutar si es satisfactoria 
-      $('<h1/>').text(json.title).appendTo('body'); $('<div class="content"/>').html(json.html).appendTo('body');
-    }, error: function (jqXHR, status, error) { //función error 
-      alert('Disculpe, existió un problema');
-    }, // función a ejecutar sin importar si la petición falló o no 
-    complete: function (jqXHR, status) { alert('Petición realizada'); }
-  });
-}
-
-const jsonJQuery = peticionJQuery(baseURL);
-console.log(jsonJQuery);
-
-const peticionFetch = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok)
-    throw new Error("WARN", response.status);
-  const data = await response.text();
-  return data;
-}
-
-const jsonFecth = peticionFetch(baseURL);
-console.log(jsonFecth);
-
-/* Implementación con promesas */
-//Ejemplo MANZ
-const doTask = (iterations) => new Promise((resolve, reject) => {
-  const numbers = [];
-  for (let i = 0; i < iterations; i++) {
-    const number = 1 + Math.floor(Math.random() * 6);
-    numbers.push(number);
-    if (number === 6) {
-      reject({
-        error: true,
-        message: "Se ha sacado un 6"
-      });
-    }
-  }
-  resolve({
-    error: false,
-    value: numbers
-  });
-});
