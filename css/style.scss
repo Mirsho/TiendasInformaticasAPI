@@ -24,4 +24,12 @@ body {
 
 section {
   padding: 0.5em;
+  #lista{
+    & > div{
+      margin-top: 1em;
+      padding-left: 1em;
+      border: solid 1px black;
+      border-radius: 1em;
+    }
+  }
 }
