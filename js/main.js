@@ -1,5 +1,51 @@
-const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
+//const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
 const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/mitienda/';
+
+let buttons = document.getElementById('buttons').getElementsByTagName('button');
+let connectionType = null;
+for (let i = 0; i < buttons.length; i++) {
+  buttons[i].addEventListener('click', function () {
+    if (this !== connectionType) {
+      connectionType = this;
+      switchConnection(connectionType.value, inmaURL);
+    }
+    console.log(this.value)
+  });
+}
+
+function collapseForm() {
+  //Crear efecto de transición en el despliegue
+  let x = document.getElementById("newShop");
+  if (x.style.display === "none") {
+    x.style.display = "flex";
+  }
+}
+
+/**
+ * Ejecuta las llamadas a las funciones de la conexión seleccionada.
+ * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
+ */
+function switchConnection(type, url) {
+  clearNodes(document.getElementById('fotoperro'));
+  switch (type) {
+    case "xml": peticionXML(url);
+      break;
+    case "fetch": {
+      peticionFetch(url)
+        .then(response => JSON.parse(response))
+        .then(data => {
+          let listaTiendas = Object.keys(data.message);
+          listaTiendas.forEach(tienda => generarTemplate(tienda, 'lista', 'shopCard'));
+        })
+        .finally(() => console.log("Terminado."))
+        .catch(error => console.error(error));
+      break;
+    }
+    case "jquery": peticionJQuery(url, 'list');
+      break;
+    default: console.log('Seleccione un tipo de conexión.');
+  }
+}
 
 /**
  *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
@@ -87,6 +133,47 @@ function clearNodes(myNode) {
 }
 
 /**
+ * Crea y añade nodos al documento HTML en base a los datos del objeto recibido, ya sea utilizando HTML templates o la función crearNodo(), 
+ * cuando el navegador no sea compatible con las templates.
+ *
+ * @param {Object} objeto - Objeto con los datos que queremos renderizar en el DOM.
+ * @param {*} containerID - ID del contenedor donde ubicaremos los nodos generados con templates.
+ * @param {*} templateTag - Etiqueta HTML de la template que queremos utilizar.
+ * @param {*} tagID - ID del elemento del contenedor en el que insertamos el nodo.
+ */
+function generarTemplate(objeto, containerID, templateTag, tagID) {
+  //Clonado de nodos:
+  // Comprobar si el navegador soporta el elemento HTML template element chequeando
+  // si tiene el atributo 'content'
+  if ('content' in document.createElement('template')) {
+    // Instanciar el elemento HTML
+    // y su contenido con el template
+    var container = document.querySelector(containerID),
+      opcion = container.content.querySelectorAll(templateTag);
+    opcion[0].setAttribute("Value", objeto)
+    opcion[0].textContent = objeto;
+
+    let listaObjetos;
+    // Clonar el nuevo objeto e insertarlo en la lista
+    if (tagID == null) {
+      listaObjetos = document.querySelector(tagID);
+    } else {
+      listaObjetos = document.querySelector(containerID);
+    }
+    var clone = document.importNode(container.content, true);
+    listaObjetos.appendChild(clone);
+  }
+  else {
+    // Forma alternativa de añadir filas mediante DOM porque el
+    // elemento template no está soportado por el navegador.
+    //Creamos los nodos de perros
+    let objNode = crearNodo("option", null, null, [], [{ 'value': objeto }]);
+    objNode.appendChild(document.createTextNode(objeto));
+    document.getElementById('objeto').appendChild(objNode);
+  }
+}
+
+/**
  *Crea un nodo en el DOM con la etiqueta HTML y los atributos que queramos asignarle.
  *
  * @param {String} tagName - Nombre de la etiqueta HTML que deseamos crear.
@@ -120,40 +207,4 @@ function crearNodo(tagName, nodeText, nodeId, nodeClasses, nodeAttributes) {
   }
 
   return nodeElement;
-}
-
-/**
- * Crea y añade nodos al documento HTML en base a los datos del objeto recibido, ya sea utilizando HTML templates o la función crearNodo(), 
- * cuando el navegador no sea compatible con las templates.
- *
- * @param {Object} objeto - Objeto con los datos que queremos renderizar en el DOM.
- * @param {*} containerID - ID del contenedor donde ubicaremos los nodos generados con templates.
- * @param {*} templateTag - Etiqueta HTML de la template que queremos utilizar.
- * @param {*} tagID - ID del elemento del contenedor en el que insertamos el nodo.
- */
-function generarTemplate(objeto, containerID, templateTag, tagID) {
-  //Clonado de nodos:
-  // Comprobar si el navegador soporta el elemento HTML template element chequeando
-  // si tiene el atributo 'content'
-  if ('content' in document.createElement('template')) {
-    // Instanciar el elemento HTML
-    // y su contenido con el template
-    var container = document.querySelector(containerID),
-      opcion = container.content.querySelectorAll(templateTag);
-    opcion[0].setAttribute("Value", objeto)
-    opcion[0].textContent = objeto;
-
-    // Clonar el nuevo objeto e insertarlo en la lista
-    var listaObjetos = document.querySelector(tagID);
-    var clone = document.importNode(container.content, true);
-    listaObjetos.appendChild(clone);
-  }
-  else {
-    // Forma alternativa de añadir filas mediante DOM porque el
-    // elemento template no está soportado por el navegador.
-    //Creamos los nodos de perros
-    let objNode = crearNodo("option", null, null, [], [{ 'value': objeto }]);
-    objNode.appendChild(document.createTextNode(objeto));
-    document.getElementById('objeto').appendChild(objNode);
-  }
 }
