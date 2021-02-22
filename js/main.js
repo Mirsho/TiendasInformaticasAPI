@@ -1,6 +1,9 @@
 //const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
 const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/mitienda/';
 
+const spinner = document.getElementById('spinner');
+const loadingScreen = document.getElementById('loading-screen');
+
 let buttons = document.getElementById('buttons').getElementsByTagName('button');
 let connectionType = null;
 for (let i = 0; i < buttons.length; i++) {
@@ -13,36 +16,32 @@ for (let i = 0; i < buttons.length; i++) {
   });
 }
 
-function collapseForm() {
-  //Crear efecto de transición en el despliegue
-  let x = document.getElementById("newShop");
-  if (x.style.display === "none") {
-    x.style.display = "flex";
-  }
-}
-
 /**
  * Ejecuta las llamadas a las funciones de la conexión seleccionada.
  * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
  */
 function switchConnection(type, url) {
-  clearNodes(document.getElementById('lista'));
+  clearNodes(document.getElementById('opciones'));
   switch (type) {
     case "xhr": peticionXML(url);
       break;
     case "fetch": {
       peticionFetch(url)
-        .then(response => JSON.parse(response))
+        .then(response => response)
         .then(data => {
-          let listaTiendas = Object.keys(data.message);
-          console.log(listaTiendas);
-          listaTiendas.forEach(tienda => generarTemplate(tienda, 'lista', 'shopCard'));
+          let tiendas = JSON.parse(data);
+          tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
         })
-        .finally(() => console.log("Terminado."))
-        .catch(error => console.error(error));
+        .finally(() => {
+          hideSpinner();
+          console.log("Terminado.");
+        })
+        .catch(error => {
+          displayError(error);
+        });
       break;
     }
-    case "jquery": peticionJQuery(url, 'list');
+    case "jquery": peticionJQuery(url, 'GET');
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
@@ -68,39 +67,54 @@ function peticionXML(url) {
       if (conection.status == 200) {
         let tiendas = JSON.parse(conection.responseText);
         console.log(tiendas);
+        //spinner.hide();
+        hideSpinner();
+        tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
       }
       else {
-        //!Ocultar spinner si lo hubiera
-        alert(conection.statusText);
+        hideSpinner();
+        displayError(conection.statusText);
       }
     } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
       console.log('Procesando...');
+      displaySpinner();
+      //spinner.show();
     }
   }
 }
-
-peticionXML(inmaURL);
-
-peticionJQuery(inmaURL);
 
 /**
  * JQUERY - Conexión con API mediante Jquery
  * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
  */
-function peticionJQuery(path, resourceType) {
+function peticionJQuery(path, requestType) {
   $.ajax({
     url: path, //URL de la petición
     data: {}, //información a enviar, puede ser una cadena
-    type: 'GET', //tipo de la petición: POST o GET
+    type: requestType, //tipo de la petición: POST o GET
     dataType: 'json', //tipo de dato que se espera
+    beforeSend: () => {
+      //spinner.show();
+      displaySpinner();
+    },
     success: function (json) { //función a ejecutar si es satisfactoria 
       console.log(json);
       json.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
     }, error: function (jqXHR, status, error) { //función error 
-      alert('Disculpe, existió un problema. Vuelva a intentarlo.');
-    }, finally: function () { },
-    // función a ejecutar sin importar si la petición falló o no 
-    complete: function (jqXHR, status) { console.log('Petición realizada'); }
+      displayError(error);
+      console.log(jqXHR);
+      console.log(status);
+    }, finally: function () {
+      //Función a ejecutar sin importar si la petición falló o no.
+      //La aprovechamos para ocultar el spinner en cualquier caso.
+      hideSpinner();
+    },
+    complete: function (jqXHR, status) {
+      hideSpinner();
+      console.log('Petición realizada');
+      console.log(jqXHR);
+      console.log(status);
+    }
   });
 }
 
@@ -109,19 +123,13 @@ function peticionJQuery(path, resourceType) {
  * @param {*} url 
  */
 const peticionFetch = async (url) => {
+  displaySpinner();
   const response = await fetch(url);
   if (!response.ok)
     throw new Error("WARN", response.status);
   const data = await response.text();
-  //console.log(data);
   return data;
 }
-
-peticionFetch(inmaURL)
-  .then(result => result)
-  .then(data => console.log(JSON.parse(data)))
-  .finally(() => console.log("Terminado."))
-  .catch(error => console.error(error));
 
 /**
  *Elimina los nodos hijo del nodo inidcado, para eliminar la foto del perro.
@@ -205,4 +213,19 @@ function crearNodo(tagName, nodeText, nodeId, nodeClasses, nodeAttributes) {
   }
 
   return nodeElement;
+}
+
+function displaySpinner() {
+  loadingScreen.style.display = 'inline';
+  spinner.style.display = 'inline-block';
+}
+
+function hideSpinner() {
+  loadingScreen.style.display = 'none';
+  spinner.style.display = 'none';
+}
+
+function displayError(error) {
+  alert('Ocurrió un error al obtener los datos.');
+  console.error(error);
 }
