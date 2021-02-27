@@ -3,6 +3,7 @@ const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/miti
 
 const spinner = document.getElementById('spinner');
 const loadingScreen = document.getElementById('loading-screen');
+const addSearch = document.getElementById('add-search');
 
 let buttons = document.getElementById('buttons').getElementsByTagName('button');
 let connectionType = null;
@@ -29,6 +30,7 @@ function switchConnection(type, url) {
       peticionFetch(url)
         .then(response => response)
         .then(data => {
+          displayAddSearch();
           let tiendas = JSON.parse(data);
           tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
         })
@@ -69,6 +71,7 @@ function peticionXML(url) {
         console.log(tiendas);
         //spinner.hide();
         hideSpinner();
+        displayAddSearch();
         tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
       }
       else {
@@ -98,7 +101,7 @@ function peticionJQuery(path, requestType) {
       displaySpinner();
     },
     success: function (json) { //función a ejecutar si es satisfactoria 
-      console.log(json);
+      displayAddSearch();
       json.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
     }, error: function (jqXHR, status, error) { //función error 
       displayError(error);
@@ -228,4 +231,23 @@ function hideSpinner() {
 function displayError(error) {
   alert('Ocurrió un error al obtener los datos.');
   console.error(error);
+}
+
+function displayAddSearch() {
+  addSearch.style.display = 'inline';
+}
+
+var collapsible = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < collapsible.length; i++) {
+  collapsible[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  });
 }

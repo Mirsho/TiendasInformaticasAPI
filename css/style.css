@@ -18,6 +18,9 @@ body {
   justify-content: center;
   align-items: center; }
 
+main {
+  width: 70%; }
+
 section {
   padding: 0.5em; }
   section#lista > div {
@@ -25,6 +28,16 @@ section {
     padding-left: 1em;
     border: solid 1px black;
     border-radius: 1em; }
+
+nav {
+  display: none; }
+  nav#add-search > div.content form .form-row {
+    display: flex;
+    gap: 1rem; }
+    nav#add-search > div.content form .form-row .form-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1; }
 
 .lds-ring {
   display: none;
@@ -64,3 +77,30 @@ section {
   top: 0;
   left: 0;
   z-index: 999; }
+
+/* Style the button that is used to open and close the collapsible content */
+.collapsible {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  margin: 0.5rem;
+  cursor: pointer;
+  user-select: none; }
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active,
+.collapsible:hover {
+  background-color: #ccc; }
+
+/* Style the collapsible content. Note: hidden by default */
+.content {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out; }

@@ -9,6 +9,9 @@
   <!-- CSS -->
   <link rel="stylesheet" href="./css/style.css">
 
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -31,9 +34,45 @@
           <button value="jquery">jQuery</button>
         </div>
       </section>
-      
-      <section id="lista">
-      </section>
+      <nav id="add-search">
+        <button type="button" class="collapsible">Nueva Tienda</button>
+        <div class="content">
+          <form>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="fname" placeholder="Nombre de la empresa">
+              </div>
+              <div class="form-group">
+                <label for="location">Localidad</label>
+                <input type="text" id="location" name="location" placeholder="Localidad de la empresa">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="address">Direccion</label>
+                <input type="text" id="address" name="address" placeholder="Dirección de la empresa">
+              </div>
+              <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="text" id="phone" name="phone" placeholder="Teléfono de la empresa">
+              </div>
+            </div>
+            <div class="form-row">
+              <input type="submit" value="Añadir Tienda">
+            </div>
+
+          </form>
+        </div>
+        <div class="search-container">
+          <form>
+            <input type="text" placeholder="ID de Tienda" name="search">
+            <button type="submit"><i class="fa fa-search"></i></button>
+          </form>
+        </div>
+      </nav>
+
+      <section id="lista"></section>
 
       <div id="loading-screen"></div>
       <div id="spinner" class="lds-ring">
