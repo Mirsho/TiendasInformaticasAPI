@@ -4,18 +4,23 @@ const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/miti
 const spinner = document.getElementById('spinner');
 const loadingScreen = document.getElementById('loading-screen');
 const addSearch = document.getElementById('add-search');
+let selectedConnection = '';
 
-let buttons = document.getElementById('buttons').getElementsByTagName('button');
-let connectionType = null;
-for (let i = 0; i < buttons.length; i++) {
-  buttons[i].addEventListener('click', function () {
-    if (this !== connectionType) {
-      connectionType = this;
-      switchConnection(connectionType.value, inmaURL);
-    }
-    console.log(this.value)
-  });
-}
+//----------------BOTÓNES CONEXIÓN---------------//
+
+window.addEventListener('load', () => {
+  let buttons = document.getElementById('buttons').getElementsByTagName('button');
+  let connectionType = null;
+  for (let i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', function () {
+      if (this !== connectionType) {
+        connectionType = this;
+        switchConnection(connectionType.value, inmaURL);
+      }
+      console.log(this.value)
+    });
+  }
+});
 
 /**
  * Ejecuta las llamadas a las funciones de la conexión seleccionada.
@@ -24,9 +29,11 @@ for (let i = 0; i < buttons.length; i++) {
 function switchConnection(type, url) {
   clearNodes(document.getElementById('opciones'));
   switch (type) {
-    case "xhr": peticionXML(url);
+    case "xhr": selectedConnection = 'xhr';
+      peticionXML(url);
       break;
     case "fetch": {
+      selectedConnection = 'fetch';
       peticionFetch(url)
         .then(response => response)
         .then(data => {
@@ -43,7 +50,8 @@ function switchConnection(type, url) {
         });
       break;
     }
-    case "jquery": peticionJQuery(url, 'GET');
+    case "jquery": selectedConnection = 'jquery';
+      peticionJQuery(url, 'GET');
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
@@ -126,6 +134,135 @@ function peticionJQuery(path, requestType) {
  * @param {*} url 
  */
 const peticionFetch = async (url) => {
+  displaySpinner();
+  const response = await fetch(url);
+  if (!response.ok)
+    throw new Error("WARN", response.status);
+  const data = await response.text();
+  return data;
+}
+
+//----------------BOTÓN BÚSQUEDA---------------//
+
+let searchButton = document.getElementById('buscarTienda');
+searchButton.addEventListener('click', () => {
+  let inputValue = document.getElementById("shopId").value;
+  //otro switch?
+  let searchURL = inmaURL.concat('/', inputValue);
+  switchSearch(selectedConnection, searchURL);
+});
+
+/**
+ * Ejecuta las llamadas a las funciones de la conexión seleccionada.
+ * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
+ */
+function switchSearch(type, url) {
+  switch (type) {
+    case "xhr": selectedConnection = 'xhr';
+      searchXML(url);
+      break;
+    case "fetch": {
+      selectedConnection = 'fetch';
+      searchFetch(url)
+        .then(response => response)
+        .then(data => {
+          displayAddSearch();
+          let tiendas = JSON.parse(data);
+          tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+        })
+        .finally(() => {
+          hideSpinner();
+          console.log("Terminado.");
+        })
+        .catch(error => {
+          displayError(error);
+        });
+      break;
+    }
+    case "jquery": selectedConnection = 'jquery';
+      searchJQuery(url, 'GET');
+      break;
+    default: console.log('Seleccione un tipo de conexión.');
+  }
+}
+
+/**
+ *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
+ *
+ * @param {String} url - Ruta de acceso a la Dog API
+ */
+function searchXML(url) {
+  let conection = new XMLHttpRequest();
+  conection.onreadystatechange = procesarEventos;
+  conection.open('GET', url, true);
+  conection.send();
+
+  /**
+   *Procesa los eventos de la conexión XML
+   *
+   */
+  function procesarEventos() {
+    if (conection.readyState == 4) {
+      if (conection.status == 200) {
+        let tiendas = JSON.parse(conection.responseText);
+        console.log(tiendas);
+        //spinner.hide();
+        hideSpinner();
+        displayAddSearch();
+        tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+      }
+      else {
+        hideSpinner();
+        displayError(conection.statusText);
+      }
+    } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
+      console.log('Procesando...');
+      displaySpinner();
+      //spinner.show();
+    }
+  }
+}
+
+/**
+ * JQUERY - Conexión con API mediante Jquery
+ * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
+ */
+function searchJQuery(path, requestType) {
+  $.ajax({
+    url: path, //URL de la petición
+    data: {}, //información a enviar, puede ser una cadena
+    type: requestType, //tipo de la petición: POST o GET
+    dataType: 'json', //tipo de dato que se espera
+    beforeSend: () => {
+      //spinner.show();
+      displaySpinner();
+    },
+    success: function (json) { //función a ejecutar si es satisfactoria 
+      displayAddSearch();
+      json.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+    }, error: function (jqXHR, status, error) { //función error 
+      displayError(error);
+      console.log(jqXHR);
+      console.log(status);
+    }, finally: function () {
+      //Función a ejecutar sin importar si la petición falló o no.
+      //La aprovechamos para ocultar el spinner en cualquier caso.
+      hideSpinner();
+    },
+    complete: function (jqXHR, status) {
+      hideSpinner();
+      console.log('Petición realizada');
+      console.log(jqXHR);
+      console.log(status);
+    }
+  });
+}
+
+/**
+ * FETCH - Función asíncrona para realizar peticiones fetch. 
+ * @param {*} url 
+ */
+const searchFetch = async (url) => {
   displaySpinner();
   const response = await fetch(url);
   if (!response.ok)
@@ -241,10 +378,10 @@ var collapsible = document.getElementsByClassName("collapsible");
 var i;
 
 for (i = 0; i < collapsible.length; i++) {
-  collapsible[i].addEventListener("click", function() {
+  collapsible[i].addEventListener("click", function () {
     this.classList.toggle("active");
     var content = this.nextElementSibling;
-    if (content.style.maxHeight){
+    if (content.style.maxHeight) {
       content.style.maxHeight = null;
     } else {
       content.style.maxHeight = content.scrollHeight + "px";

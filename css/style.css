@@ -15,21 +15,29 @@ header {
 body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center; }
 
 main {
-  width: 70%; }
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; }
 
 section {
   padding: 0.5em; }
+  section#panel {
+    width: 80%; }
+  section#opciones {
+    display: flex;
+    flex-direction: column;
+    align-items: center; }
   section#lista > div {
     margin-top: 1em;
     padding-left: 1em;
     border: solid 1px black;
     border-radius: 1em; }
 
-nav {
+nav#add-search {
   display: none; }
   nav#add-search > div.content form .form-row {
     display: flex;
