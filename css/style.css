@@ -31,6 +31,12 @@ section {
     display: flex;
     flex-direction: column;
     align-items: center; }
+    section#opciones #buttons {
+      display: flex;
+      flex-direction: column;
+      width: 30%; }
+      section#opciones #buttons button {
+        margin: .5em; }
   section#lista > div {
     margin-top: 1em;
     padding-left: 1em;

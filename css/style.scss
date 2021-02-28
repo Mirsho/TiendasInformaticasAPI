@@ -37,6 +37,14 @@ section {
     display: flex;
     flex-direction: column;
     align-items: center;
+    #buttons{
+      display: flex;
+      flex-direction: column;
+      width: 30%;
+      button{
+        margin: .5em;
+      }
+    }
   }
   &#lista {
     & > div {

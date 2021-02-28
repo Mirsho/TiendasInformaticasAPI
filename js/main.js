@@ -144,11 +144,12 @@ const peticionFetch = async (url) => {
 
 //----------------BOTÓN BÚSQUEDA---------------//
 
-let searchButton = document.getElementById('buscarTienda');
+const searchButton = document.getElementById('buscarTienda');
 searchButton.addEventListener('click', () => {
   let inputValue = document.getElementById("shopId").value;
-  //otro switch?
-  let searchURL = inmaURL.concat('/', inputValue);
+  console.log(inputValue);
+  let searchURL = inmaURL.concat(inputValue);
+  console.log(searchURL);
   switchSearch(selectedConnection, searchURL);
 });
 
@@ -158,17 +159,15 @@ searchButton.addEventListener('click', () => {
  */
 function switchSearch(type, url) {
   switch (type) {
-    case "xhr": selectedConnection = 'xhr';
-      searchXML(url);
+    case "xhr": searchXML(url);
       break;
     case "fetch": {
-      selectedConnection = 'fetch';
       searchFetch(url)
         .then(response => response)
         .then(data => {
-          displayAddSearch();
-          let tiendas = JSON.parse(data);
-          tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+          let tienda = JSON.parse(data);
+          clearNodes(document.getElementById('lista'));
+          generarTemplate(tienda, '#shopCard', '#lista');
         })
         .finally(() => {
           hideSpinner();
@@ -179,8 +178,7 @@ function switchSearch(type, url) {
         });
       break;
     }
-    case "jquery": selectedConnection = 'jquery';
-      searchJQuery(url, 'GET');
+    case "jquery": searchJQuery(url, 'GET');
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
@@ -204,20 +202,20 @@ function searchXML(url) {
   function procesarEventos() {
     if (conection.readyState == 4) {
       if (conection.status == 200) {
-        let tiendas = JSON.parse(conection.responseText);
-        console.log(tiendas);
+        clearNodes(document.getElementById('lista'));
+        let tienda = JSON.parse(conection.responseText);
+        console.log(tienda);
         //spinner.hide();
-        hideSpinner();
-        displayAddSearch();
-        tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+        hideSearchSpinner();
+        generarTemplate(tienda, '#shopCard', '#lista');
       }
       else {
-        hideSpinner();
+        hideSearchSpinner();
         displayError(conection.statusText);
       }
     } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
       console.log('Procesando...');
-      displaySpinner();
+      displaySearchSpinner();
       //spinner.show();
     }
   }
@@ -235,11 +233,11 @@ function searchJQuery(path, requestType) {
     dataType: 'json', //tipo de dato que se espera
     beforeSend: () => {
       //spinner.show();
-      displaySpinner();
+      displaySearchSpinner();
     },
     success: function (json) { //función a ejecutar si es satisfactoria 
-      displayAddSearch();
-      json.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+      clearNodes(document.getElementById('lista'));
+      generarTemplate(json, '#shopCard', '#lista');
     }, error: function (jqXHR, status, error) { //función error 
       displayError(error);
       console.log(jqXHR);
@@ -247,10 +245,10 @@ function searchJQuery(path, requestType) {
     }, finally: function () {
       //Función a ejecutar sin importar si la petición falló o no.
       //La aprovechamos para ocultar el spinner en cualquier caso.
-      hideSpinner();
+      hideSearchSpinner();
     },
     complete: function (jqXHR, status) {
-      hideSpinner();
+      hideSearchSpinner();
       console.log('Petición realizada');
       console.log(jqXHR);
       console.log(status);
@@ -263,7 +261,7 @@ function searchJQuery(path, requestType) {
  * @param {*} url 
  */
 const searchFetch = async (url) => {
-  displaySpinner();
+  displaySearchSpinner();
   const response = await fetch(url);
   if (!response.ok)
     throw new Error("WARN", response.status);
@@ -360,9 +358,20 @@ function displaySpinner() {
   spinner.style.display = 'inline-block';
 }
 
+function displaySearchSpinner() {
+  searchButton.firstChild.style.display = 'none';
+  searchButton.appendChild(spinner);
+  spinner.style.display = 'inline-block';
+}
+
 function hideSpinner() {
   loadingScreen.style.display = 'none';
   spinner.style.display = 'none';
+}
+
+function hideSearchSpinner() {
+  spinner.style.display = 'none';
+  searchButton.firstChild.style.display = 'inline';
 }
 
 function displayError(error) {
