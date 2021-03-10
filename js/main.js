@@ -1,3 +1,6 @@
+//Link al repositorio en GitHub:
+//  https://github.com/Mirsho/TiendasInformaticasAPI
+
 //const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
 const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/mitienda/';
 
@@ -279,12 +282,132 @@ const searchFetch = async (url) => {
 
 //----------------AÑADIR TIENDA---------------//
 
-const addButton = document.getElementById('addButton');
-addButton.addEventListener('click', () => {
-  let newShop = getFormShop();
-  console.log(newShop);
-  switchInsert(selectedConnection, inmaURL, newShop);
+//!Poner validación del formulario y añadirle un evento (al formulario) que haga con event.preventDefault();
+
+const name = document.getElementById('name');
+/**
+ * Gestiona la validación del nombre, lanzando y asignando la clase de error correspondiente en caso de que no cumpla los requisitos.
+ */
+function validarNombre() {
+  const errorZone = name.nextElementSibling;
+  name.classList.remove('correctoInput');
+  name.classList.remove('errorInput');
+  errorZone.textContent = "";
+  if (name.validity.valueMissing) {
+    name.classList.add('errorInput');
+    errorZone.textContent = "Este campo es obligatorio.";
+  } else if (name.validity.patternMismatch) {
+    name.classList.add('errorInput');
+    errorZone.textContent = "No cumple con los requisitos, debe empezar por mayúscula, pruebe otra vez.";
+  } else {
+    name.classList.add('correctoInput');
+  }
+}
+name.addEventListener('input', validarNombre);
+
+const localidad = document.getElementById('location');
+/**
+ * Gestiona la validación de la Localidad, lanzando y asignando la clase de error correspondiente en caso de que no cumpla los requisitos.
+ */
+function validarLocalidad() {
+  const errorZone = localidad.nextElementSibling;
+  localidad.classList.remove('correctoInput');
+  localidad.classList.remove('errorInput');
+  errorZone.textContent = "";
+  if (localidad.validity.valueMissing) {
+    localidad.classList.add('errorInput');
+    errorZone.textContent = "Este campo es obligatorio.";
+  } else if (localidad.validity.patternMismatch) {
+    localidad.classList.add('errorInput');
+    errorZone.textContent = "No cumple con los requisitos, debe empezar por mayúscula, pruebe otra vez.";
+  } else {
+    localidad.classList.add('correctoInput');
+  }
+}
+localidad.addEventListener('input', validarLocalidad);
+
+const address = document.getElementById('address');
+/**
+ * Gestiona la validación de la dirección, lanzando y asignando la clase de error correspondiente en caso de que no cumpla los requisitos.
+ */
+function validarDireccion() {
+  const errorZone = address.nextElementSibling;
+  address.classList.remove('correctoInput');
+  address.classList.remove('errorInput');
+  errorZone.textContent = "";
+  if (address.validity.valueMissing) {
+    address.classList.add('errorInput');
+    errorZone.textContent = "Este campo es obligatorio.";
+  } else if (address.validity.patternMismatch) {
+    address.classList.add('errorInput');
+    errorZone.textContent = "No cumple con los requisitos, debe empezar por mayúscula, pruebe otra vez. Se puede incluir el prefijo de direccion \"C/\"";
+  } else {
+    address.classList.add('correctoInput');
+  }
+}
+address.addEventListener('input', validarDireccion);
+
+const phoneNumber = document.getElementById('phone');
+/**
+ * Gestiona la validación de número de teléfono, lanzando y asignando la clase de error correspondiente en caso de que no cumpla los requisitos.
+ */
+function validatePhone() {
+  const errorZone = phoneNumber.nextElementSibling;
+  phoneNumber.classList.remove('correctoInput');
+  phoneNumber.classList.remove('errorInput');
+  errorZone.textContent = "";
+  if (phoneNumber.validity.valueMissing) {
+    phoneNumber.classList.add('errorInput');
+    errorZone.textContent = "Este campo es obligatorio.";
+  } else if (phoneNumber.validity.patternMismatch) {
+    phoneNumber.classList.add('errorInput');
+    errorZone.textContent = "El campo puede tener prefijo opcional y 9 cifras (Debe empezar por 6, 8 ó 9) Ejemplo: (+34)934321234 | 654345234";
+  } else {
+    phoneNumber.classList.add('correctoInput');
+  }
+}
+phoneNumber.addEventListener('input', validatePhone);
+
+const formulario = document.getElementsByTagName('form')[0];
+
+formulario.addEventListener('submit', (e) => {
+
+  const resultado = document.getElementById('lista');
+  clearNodes(resultado);
+  let fallo = 0;
+  if (!name.validity.valid) {
+    validarNombre();
+    fallo++;
+  }
+  if (!localidad.validity.valid) {
+    validarLocalidad();
+    fallo++;
+  }
+  if (!address.validity.valid) {
+    validarDireccion();
+    fallo++;
+  }
+  if (!phoneNumber.validity.valid) {
+    validatePhone();
+    fallo++;
+  }
+  if (fallo == 0) {
+    //getFormShop();
+    let newShop = getFormShop();
+    console.log(newShop);
+    switchInsert(selectedConnection, inmaURL, newShop);
+  } else {
+    console.log(fallo);
+  }
+  e.preventDefault();
 });
+
+// const addButton = document.getElementById('addButton');
+// addButton.addEventListener('click', () => {
+//   let newShop = getFormShop();
+//   console.log(newShop);
+//   switchInsert(selectedConnection, inmaURL, newShop);
+// });
 
 function getFormShop() {
   let nameValue = document.getElementById("name").value;
@@ -297,6 +420,7 @@ function getFormShop() {
     "localidad": locationValue,
     "telefono": phoneValue
   }
+  console.log(newShop);
   return newShop;
 }
 
@@ -317,6 +441,7 @@ function switchInsert(type, url, object) {
         .finally(() => {
           hideSpinner();
           console.log("Terminado.");
+          switchConnection(selectedConnection, inmaURL);
         })
         .catch(error => {
           displayError(error);
@@ -358,6 +483,7 @@ function insertXML(url, data) {
       else {
         hideSearchSpinner();
         displayError(conection.statusText);
+        switchConnection(selectedConnection, inmaURL);
       }
     } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
       console.log('Procesando...');
@@ -412,7 +538,7 @@ const insertFetch = async (url, data) => {
   const response = await fetch(url, {
     method: 'POST', // or 'PUT'
     body: JSON.stringify(data), // data can be `string` or {object}!
-    headers:{
+    headers: {
       'Content-Type': 'application/json'
     }
   });

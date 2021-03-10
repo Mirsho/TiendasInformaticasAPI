@@ -12,11 +12,6 @@
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-
   <title>U09P01</title>
 </head>
 
@@ -41,31 +36,39 @@
         </div>
         <button type="button" class="collapsible">Nueva Tienda</button>
         <div class="content">
-          <form>
+          <form action="#" novalidate>
             <div class="form-row">
               <div class="form-group">
                 <label for="name">Nombre</label>
-                <input type="text" id="name" name="fname" placeholder="Nombre de la empresa">
+                <input type="text" id="name" name="name" placeholder="Nombre de la empresa" required
+                  pattern="^[A-Z\u00f1\u00d1]{1}(\s*[a-zA-ZÀ-ÿ\u00f1\u00d1']*)*[a-zA-Z\u00f1\u00d1]+$">
+                <span class="error" aria-live="polite"></span>
               </div>
               <div class="form-group">
                 <label for="location">Localidad</label>
-                <input type="text" id="location" name="location" placeholder="Localidad de la empresa">
+                <input type="text" id="location" name="location" placeholder="Localidad de la empresa"
+                  pattern="^[A-Z\u00f1\u00d1]{1}(\s*[a-zA-ZÀ-ÿ\u00f1\u00d1']*)*[a-zA-Z\u00f1\u00d1]+$">
+                <span class="error" aria-live="polite"></span>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="address">Direccion</label>
-                <input type="text" id="address" name="address" placeholder="Dirección de la empresa">
+                <input type="text" id="address" name="address" placeholder="Dirección de la empresa" required
+                  pattern="(^\C\/)?^[\w]{1}(\s*[\w_]*)*[\w]+$">
+                <span class="error" aria-live="polite"></span>
               </div>
               <div class="form-group">
                 <label for="phone">Teléfono</label>
-                <input type="text" id="phone" name="phone" placeholder="Teléfono de la empresa">
+                <input type="text" id="phone" name="phone" placeholder="Teléfono de la empresa" required
+                  pattern="(^\(\+\d{2,3}\))?[689]\d{8}">
+                <span class="error" aria-live="polite"></span>
               </div>
             </div>
             <div class="form-row">
-              <button id="addButton">Añadir Tienda</button>
+              <input type="submit" value="Añadir Tienda">
+              <!-- <button type="submit" id="addButton">Añadir Tienda</button> -->
             </div>
-
           </form>
         </div>
 
@@ -95,6 +98,11 @@
   <footer>
 
   </footer>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
 
   <!-- Optional JavaScript -->
   <script src="./js/main.js"></script>
