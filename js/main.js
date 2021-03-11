@@ -1,288 +1,105 @@
 //Link al repositorio en GitHub:
 //  https://github.com/Mirsho/TiendasInformaticasAPI
 
+import * as ajax from "./ajaxrequests.js";
+
 //const baseURL = 'http://localhost:8080/EmprInfRs_PereraAdrian/webresources/tienda'
 const inmaURL = 'https://webapp-210130211157.azurewebsites.net/webresources/mitienda/';
 
+const options = document.getElementById('opciones');
 const spinner = document.getElementById('spinner');
+const searchButton = document.getElementById('buscarTienda');
 const loadingScreen = document.getElementById('loading-screen');
 const addSearch = document.getElementById('add-search');
-const options = document.getElementById('opciones');
 let selectedConnection = '';
+
+//!Por cada metodo consulta, 1 get y 1 post
+//6 methods 3 y 3, solo devuleven los datos.
+//Si hay error, devolver null.
+//3 funciones para lo necesario: sacar la lista de tiendas, buscarla e insertar. Los switdh deben estar en estos métodos, que comprueben la variable del método de consulta y que haga las llamadas a funciones correspondientes y la URL que le corresponda (ej: concatenando el ID).
+//En los get devuelve objeto, en el Post un mensaje de exito-error, o un boolean, etc.
+//Con todo esto gestionar la parte del dom.
+//Funciones concisas.
 
 //----------------BOTÓNES CONEXIÓN---------------//
 
 window.addEventListener('load', () => {
   let buttons = document.getElementById('buttons').getElementsByTagName('button');
-  let connectionType = null;
   for (let i = 0; i < buttons.length; i++) {
-    buttons[i].addEventListener('click', function () {
-      if (this !== connectionType) {
-        connectionType = this;
-        switchConnection(connectionType.value, inmaURL);
-      }
+    buttons[i].addEventListener('click', function (event) {
+      selectedConnection = event.target.value;
+      listShops();
       console.log(this.value)
     });
   }
 });
 
-/**
- * Ejecuta las llamadas a las funciones de la conexión seleccionada.
- * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
- */
-function switchConnection(type, url) {
-  options.style.display = 'none';
-  switch (type) {
-    case "xhr": selectedConnection = 'xhr';
-      peticionXML(url);
+//----------------LISTAR TIENDAS---------------//
+
+let listaTiendas;
+async function listShops() {
+  displaySpinner();
+  switch (selectedConnection) {
+    case "xhr": listaTiendas = ajax.getXHR(inmaURL);
       break;
-    case "fetch": {
-      selectedConnection = 'fetch';
-      peticionFetch(url)
-        .then(response => response)
-        .then(data => {
-          displayAddSearch();
-          let tiendas = JSON.parse(data);
-          tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
-        })
-        .finally(() => {
-          hideSpinner();
-          console.log("Terminado.");
-        })
-        .catch(error => {
-          displayError(error);
-          options.style.display = 'inline';
-        });
+    case "fetch": listaTiendas = await ajax.getFetch(inmaURL);
       break;
-    }
-    case "jquery": selectedConnection = 'jquery';
-      peticionJQuery(url, 'GET');
+    case "jquery": listaTiendas = ajax.getJQuery(inmaURL);
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
-}
-
-/**
- *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
- *
- * @param {String} url - Ruta de acceso a la Dog API
- */
-function peticionXML(url) {
-  let conection = new XMLHttpRequest();
-  conection.onreadystatechange = procesarEventos;
-  conection.open('GET', url, true);
-  conection.send();
-
-  /**
-   *Procesa los eventos de la conexión XML
-   *
-   */
-  function procesarEventos() {
-    if (conection.readyState == 4) {
-      if (conection.status == 200) {
-        let tiendas = JSON.parse(conection.responseText);
-        console.log(tiendas);
-        //spinner.hide();
-        hideSpinner();
-        displayAddSearch();
-        tiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
-      }
-      else {
-        hideSpinner();
-        displayError(conection.statusText);
-        options.style.display = 'block';
-      }
-    } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
-      console.log('Procesando...');
-      displaySpinner();
-      //spinner.show();
-    }
+  if (listaTiendas) {
+    clearNodes(document.getElementById('lista'));
+    listaTiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
+    displayAddSearch();
+    hideSpinner();
+  } else {
+    hideSpinner();
+    options.style.display = 'inline';
   }
-}
-
-/**
- * JQUERY - Conexión con API mediante Jquery
- * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
- */
-function peticionJQuery(path, requestType) {
-  $.ajax({
-    url: path, //URL de la petición
-    data: {}, //información a enviar, puede ser una cadena
-    type: requestType, //tipo de la petición: POST o GET
-    dataType: 'json', //tipo de dato que se espera
-    beforeSend: () => {
-      //spinner.show();
-      displaySpinner();
-    },
-    success: function (json) { //función a ejecutar si es satisfactoria 
-      displayAddSearch();
-      console.log(json);
-      json.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
-    }, error: function (jqXHR, status, error) { //función error 
-      displayError(error);
-      options.style.display = 'block';
-      console.log(jqXHR);
-      console.log(status);
-    }, finally: function () {
-      //Función a ejecutar sin importar si la petición falló o no.
-      //La aprovechamos para ocultar el spinner en cualquier caso.
-      hideSpinner();
-    },
-    complete: function (jqXHR, status) {
-      hideSpinner();
-      console.log('Petición realizada');
-      console.log(jqXHR);
-      console.log(status);
-    }
-  });
-}
-
-/**
- * FETCH - Función asíncrona para realizar peticiones fetch. 
- * @param {*} url 
- */
-const peticionFetch = async (url) => {
-  displaySpinner();
-  const response = await fetch(url);
-  if (!response.ok)
-    throw new Error("WARN", response.status);
-  const data = await response.text();
-  return data;
 }
 
 //----------------BOTÓN BÚSQUEDA---------------//
 
-const searchButton = document.getElementById('buscarTienda');
 searchButton.addEventListener('click', () => {
   let inputValue = document.getElementById("shopId").value;
   console.log(inputValue);
   let searchURL = inmaURL.concat(inputValue);
   console.log(searchURL);
-  switchSearch(selectedConnection, searchURL);
+  searchShop(searchURL);
 });
 
+//----------------BUSCAR TIENDA---------------//
+
+let tienda;
 /**
  * Ejecuta las llamadas a las funciones de la conexión seleccionada.
  * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
  */
-function switchSearch(type, url) {
-  switch (type) {
-    case "xhr": searchXML(url);
+async function searchShop(url) {
+  displaySearchSpinner();
+  switch (selectedConnection) {
+    case "xhr": tienda = ajax.getXHR(url);
       break;
-    case "fetch": {
-      searchFetch(url)
-        .then(response => response)
-        .then(data => {
-          let tienda = JSON.parse(data);
-          clearNodes(document.getElementById('lista'));
-          generarTemplate(tienda, '#shopCard', '#lista');
-          searchButton.firstChild.setAttribute('class', 'fa fa-times');
-        })
-        .finally(() => {
-          hideSpinner();
-          console.log("Terminado.");
-        })
-        .catch(error => {
-          displayError(error);
-        });
+    case "fetch": tienda = await ajax.getFetch(url);
       break;
-    }
-    case "jquery": searchJQuery(url, 'GET');
+    case "jquery": tienda = ajax.getJQuery(url);
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
-}
-
-/**
- *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
- *
- * @param {String} url - Ruta de acceso a la Dog API
- */
-function searchXML(url) {
-  let conection = new XMLHttpRequest();
-  conection.onreadystatechange = procesarEventos;
-  conection.open('GET', url, true);
-  conection.send();
-
-  /**
-   *Procesa los eventos de la conexión XML
-   *
-   */
-  function procesarEventos() {
-    if (conection.readyState == 4) {
-      if (conection.status == 200) {
-        clearNodes(document.getElementById('lista'));
-        let tienda = JSON.parse(conection.responseText);
-        console.log(tienda);
-        //spinner.hide();
-        hideSearchSpinner();
-        generarTemplate(tienda, '#shopCard', '#lista');
-        searchButton.firstChild.setAttribute('class', 'fa fa-times');
-      }
-      else {
-        hideSearchSpinner();
-        displayError(conection.statusText);
-      }
-    } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
-      console.log('Procesando...');
-      displaySearchSpinner();
-      //spinner.show();
-    }
+  if (tienda) {
+    clearNodes(document.getElementById('lista'));
+    generarTemplate(tienda, '#shopCard', '#lista');
+    searchButton.firstChild.setAttribute('class', 'fa fa-times');
+    hideSearchSpinner();
+  } else {
+    hideSearchSpinner();
+    searchButton.firstChild.setAttribute('class', 'fa fa-times');
+    options.style.display = 'block';
   }
 }
 
-/**
- * JQUERY - Conexión con API mediante Jquery
- * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
- */
-function searchJQuery(path, requestType) {
-  $.ajax({
-    url: path, //URL de la petición
-    data: {}, //información a enviar, puede ser una cadena
-    type: requestType, //tipo de la petición: POST o GET
-    dataType: 'json', //tipo de dato que se espera
-    beforeSend: () => {
-      //spinner.show();
-      displaySearchSpinner();
-    },
-    success: function (json) { //función a ejecutar si es satisfactoria 
-      clearNodes(document.getElementById('lista'));
-      generarTemplate(json, '#shopCard', '#lista');
-      searchButton.firstChild.setAttribute('class', 'fa fa-times');
-    }, error: function (jqXHR, status, error) { //función error 
-      displayError(error);
-      console.log(jqXHR);
-      console.log(status);
-    }, finally: function () {
-      //Función a ejecutar sin importar si la petición falló o no.
-      //La aprovechamos para ocultar el spinner en cualquier caso.
-      hideSearchSpinner();
-    },
-    complete: function (jqXHR, status) {
-      hideSearchSpinner();
-      console.log('Petición realizada');
-      console.log(jqXHR);
-      console.log(status);
-    }
-  });
-}
-
-/**
- * FETCH - Función asíncrona para realizar peticiones fetch. 
- * @param {*} url 
- */
-const searchFetch = async (url) => {
-  displaySearchSpinner();
-  const response = await fetch(url);
-  if (!response.ok)
-    throw new Error("WARN", response.status);
-  const data = await response.text();
-  return data;
-}
-
-//----------------AÑADIR TIENDA---------------//
-
-//!Poner validación del formulario y añadirle un evento (al formulario) que haga con event.preventDefault();
+//-----------VALIDACIONES FORMULARIO AÑADIR TIENDA----------//
 
 const name = document.getElementById('name');
 /**
@@ -424,128 +241,57 @@ function getFormShop() {
   return newShop;
 }
 
+//----------------INSERTAR TIENDA---------------//
+
 /**
  * Ejecuta las llamadas a las funciones de la conexión seleccionada.
  * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
  */
 function switchInsert(type, url, object) {
   switch (type) {
-    case "xhr": insertXML(url, object);
+    case "xhr": ajax.postXHR(url, object);
       break;
     case "fetch": {
-      insertFetch(url, object)
-        .then(response => response)
-        .then(data => {
-          console.log(data);
-        })
-        .finally(() => {
-          hideSpinner();
-          console.log("Terminado.");
-          switchConnection(selectedConnection, inmaURL);
-        })
-        .catch(error => {
-          displayError(error);
-        });
+      ajax.postFetch(url, object)
       break;
     }
-    case "jquery": insertJQuery(url, 'POST', object);
+    case "jquery": ajax.postJQuery(url, 'POST', object);
       break;
     default: console.log('Seleccione un tipo de conexión.');
   }
 }
 
-/**
- *Establece una primera conexión de tipo XMLHttp con la Dog API para obtener la lista de razas.
- *
- * @param {String} url - Ruta de acceso a la Dog API
- */
-function insertXML(url, data) {
-  let conection = new XMLHttpRequest();
-  conection.onreadystatechange = procesarEventos;
-  conection.open('POST', url, true);
-  conection.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  conection.send(JSON.stringify(data));
+//----------------DISPLAY CALLS---------------//
 
-  /**
-   *Procesa los eventos de la conexión XML
-   *
-   */
-  function procesarEventos() {
-    if (conection.readyState == 4) {
-      if (conection.status == 200) {
-        clearNodes(document.getElementById('lista'));
-        let respuesta = conection.responseText;
-        console.log(respuesta);
-        //spinner.hide();
-        hideSearchSpinner();
-        switchConnection(selectedConnection, inmaURL);
-      }
-      else {
-        hideSearchSpinner();
-        displayError(conection.statusText);
-        switchConnection(selectedConnection, inmaURL);
-      }
-    } else if (conection.readyState == 1 || conection.readyState == 2 || conection.readyState == 3) {
-      console.log('Procesando...');
-      displaySearchSpinner();
-      //spinner.show();
-    }
-  }
+function displaySpinner() {
+  loadingScreen.style.display = 'inline';
+  spinner.style.display = 'inline-block';
 }
 
-/**
- * JQUERY - Conexión con API mediante Jquery
- * @param {String} path - URL de la API a la que nos queremos conectar mediante el métod JQuery
- */
-function insertJQuery(path, requestType, data) {
-  $.ajax({
-    url: path, //URL de la petición
-    data: JSON.stringify(data), //información a enviar, puede ser una cadena u objeto {}
-    type: requestType, //tipo de la petición: POST o GET
-    dataType: 'json', //tipo de dato que se espera
-    contentType: 'application/json',
-    beforeSend: () => {
-      //spinner.show();
-      displaySpinner();
-    },
-    success: function (json) { //función a ejecutar si es satisfactoria 
-      console.log(json);
-      peticionJQuery(inmaURL, 'GET');
-    }, error: function (jqXHR, status, error) { //función error 
-      displayError(error);
-      console.log(jqXHR);
-      console.log(status);
-    }, finally: function () {
-      //Función a ejecutar sin importar si la petición falló o no.
-      //La aprovechamos para ocultar el spinner en cualquier caso.
-      hideSearchSpinner();
-    },
-    complete: function (jqXHR, status) {
-      hideSearchSpinner();
-      console.log('Petición realizada');
-      console.log(jqXHR);
-      console.log(status);
-    }
-  });
+function hideSpinner() {
+  loadingScreen.style.display = 'none';
+  spinner.style.display = 'none';
 }
 
-/**
- * FETCH - Función asíncrona para realizar peticiones fetch. 
- * @param {*} url 
- */
-const insertFetch = async (url, data) => {
-  displaySearchSpinner();
-  const response = await fetch(url, {
-    method: 'POST', // or 'PUT'
-    body: JSON.stringify(data), // data can be `string` or {object}!
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!response.ok)
-    throw new Error("WARN", response.status);
-  const message = await response.text();
-  return message;
+function displayError(error) {
+  alert('Ocurrió un error al obtener los datos.');
+  console.error(error);
+
+}
+
+function displayAddSearch() {
+  addSearch.style.display = 'inline';
+}
+
+function displaySearchSpinner() {
+  searchButton.firstChild.style.display = 'none';
+  searchButton.appendChild(spinner);
+  spinner.style.display = 'inline-block';
+}
+
+function hideSearchSpinner() {
+  spinner.style.display = 'none';
+  searchButton.firstChild.style.display = 'inline';
 }
 
 /**
@@ -630,37 +376,6 @@ function crearNodo(tagName, nodeText, nodeId, nodeClasses, nodeAttributes) {
   }
 
   return nodeElement;
-}
-
-function displaySpinner() {
-  loadingScreen.style.display = 'inline';
-  spinner.style.display = 'inline-block';
-}
-
-function displaySearchSpinner() {
-  searchButton.firstChild.style.display = 'none';
-  searchButton.appendChild(spinner);
-  spinner.style.display = 'inline-block';
-}
-
-function hideSpinner() {
-  loadingScreen.style.display = 'none';
-  spinner.style.display = 'none';
-}
-
-function hideSearchSpinner() {
-  spinner.style.display = 'none';
-  searchButton.firstChild.style.display = 'inline';
-}
-
-function displayError(error) {
-  alert('Ocurrió un error al obtener los datos.');
-  console.error(error);
-
-}
-
-function displayAddSearch() {
-  addSearch.style.display = 'inline';
 }
 
 var collapsible = document.getElementsByClassName("collapsible");
