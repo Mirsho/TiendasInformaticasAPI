@@ -53,6 +53,7 @@ async function listShops() {
     listaTiendas.forEach(tienda => generarTemplate(tienda, '#shopCard', '#lista'));
     displayAddSearch();
     hideSpinner();
+    options.style.display = 'none';
   } else {
     hideSpinner();
     options.style.display = 'inline';
@@ -95,7 +96,6 @@ async function searchShop(url) {
   } else {
     hideSearchSpinner();
     searchButton.firstChild.setAttribute('class', 'fa fa-times');
-    options.style.display = 'block';
   }
 }
 
@@ -212,7 +212,7 @@ formulario.addEventListener('submit', (e) => {
     //getFormShop();
     let newShop = getFormShop();
     console.log(newShop);
-    switchInsert(selectedConnection, inmaURL, newShop);
+    insertShop(newShop);
   } else {
     console.log(fallo);
   }
@@ -243,21 +243,28 @@ function getFormShop() {
 
 //----------------INSERTAR TIENDA---------------//
 
+let message;
 /**
  * Ejecuta las llamadas a las funciones de la conexión seleccionada.
  * @param {String} type - Tipo de conexión marcada en el formulario de botones radio.
  */
-function switchInsert(type, url, object) {
-  switch (type) {
-    case "xhr": ajax.postXHR(url, object);
+async function insertShop(object) {
+  displaySearchSpinner();
+  switch (selectedConnection) {
+    case "xhr": message = ajax.postXHR(inmaURL, object);
       break;
-    case "fetch": {
-      ajax.postFetch(url, object)
+    case "fetch": message = await ajax.postFetch(inmaURL, object);
       break;
-    }
-    case "jquery": ajax.postJQuery(url, 'POST', object);
+    case "jquery": message = ajax.postJQuery(inmaURL, object);
       break;
     default: console.log('Seleccione un tipo de conexión.');
+  }
+  if (message) {
+    hideSearchSpinner();
+    listShops();
+  } else {
+    hideSearchSpinner();
+    searchButton.firstChild.setAttribute('class', 'fa fa-times');
   }
 }
 

@@ -1,5 +1,6 @@
 //---------------GET METHODS---------------//
 
+//Envolver la llamada en una promesa para que pueda hacer un return de los datos a main.js
 /**
  *Establece una primera conexión de tipo XMLHttp con la API para obtener la lista de razas.
  *
@@ -65,15 +66,12 @@ export function getJQuery(url) {
  */
 export async function getFetch(url) {
   return await fetch(url)
-    .then(response => response)
+    .then(response => response.text())
     .then(data => JSON.parse(data))
     .finally(() => {
       console.log("Terminado.");
     })
-    .catch(error => {
-      console.log(error);
-      return null;
-    });
+    .catch(() => null);
 }
 
 //----------------POST METHODS---------------//
@@ -152,16 +150,10 @@ export async function postFetch(url, data) {
       'Content-Type': 'application/json'
     }
   })
-    .then(response => response)
-    .then(data => {
-      //!Mensaje éxito
-      return JSON.parse(data)
-    })
+    .then(response => response.text())
+    .then((data) => console.log(data))
     .finally(() => {
       console.log("Terminado.");
     })
-    .catch(error => {
-      console.log(error);
-      return null;
-    });
+    .catch(() => null);
 }
